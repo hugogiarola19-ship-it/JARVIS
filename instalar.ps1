@@ -47,7 +47,12 @@ function Tem($nome) { [bool](Get-Command $nome -ErrorAction SilentlyContinue) }
 function PythonOk {
     foreach ($c in @("python", "py")) {
         if (Tem $c) {
-            $v = (& $c --version 2>&1 | Out-String)
+            # O atalho falso da Microsoft Store escreve um aviso de erro; nao deixa isso parar o script.
+            $v = ""
+            $antes = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            try { $v = (& $c --version 2>&1 | Out-String) } catch { $v = "" }
+            $ErrorActionPreference = $antes
             if ($v -match "Python 3\.(\d+)") {
                 $menor = [int]$Matches[1]
                 if ($menor -ge 10 -and $menor -le 13) { Write-Host "Python OK: $($v.Trim())"; return $true }
