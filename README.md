@@ -35,10 +35,16 @@ Reserve tempo e internet: são vários GB de download (Build Tools, modelo, voze
 
 ## Escolhendo o LIMIAR das palmas
 
-Na calibração, fique uns segundos em silêncio e depois bata palmas. Anote dois números: o maior
-valor que aparece **em silêncio** (ruído do ambiente) e o valor típico **das palmas**. O `LIMIAR`
-no `palmas.py` deve ficar entre os dois, mais perto das palmas — um bom começo é o meio do
-caminho. Dispara sozinho com barulho? Aumente. Não percebe as palmas? Diminua.
+A calibração (`.\palmas.cmd --calibrar`) só mostra sons com pico acima de 0,05, numa linha como
+`pico 0.62  ruído 0.004`; em silêncio não aparece nada. Faça assim:
+
+1. Bata palmas umas 10 vezes, do lugar onde você costuma ficar, e anote o **menor** pico delas.
+2. Fale alto, digite, arraste a cadeira, e anote o **maior** pico desses barulhos.
+3. O `LIMIAR` (linha `LIMIAR = 0.30` do `palmas.py`) fica entre os dois: comece com uns 70% da
+   palma mais fraca.
+
+Dispara sozinho com barulho? Aumente. Não percebe as palmas? Diminua. Se as palmas dão pico
+abaixo de 0,2, aumente antes o volume do microfone no Windows.
 
 ## Onde fica cada coisa
 
@@ -60,5 +66,8 @@ jarvis gui      # interface gráfica no navegador
   executado num Windows de verdade**; a primeira rodada é o teste.
 - A documentação do OpenJarvis não descreve as chaves `speech.*`, a voz `pf_dora` nem os modelos
   `gemma4:*`. Se a etapa 3, 4 ou 5 reclamar de chave ou modelo desconhecido, pare e mande o erro.
+- O `palmas.py` abre o Jarvis com `uv run jarvis chat --voice` dentro de
+  `%LOCALAPPDATA%\OpenJarvis\src`. Esse modo de voz também não está na documentação que foi lida;
+  se o Jarvis não reconhecer o comando, mande o erro.
 - Se abrir um PowerShell novo e `jarvis` não for reconhecido, feche e abra a janela de novo
   (o PATH só atualiza em janelas novas).
