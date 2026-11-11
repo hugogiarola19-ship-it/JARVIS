@@ -37,11 +37,6 @@ function Rodar($n, [scriptblock]$cmd) {
     if ($LASTEXITCODE -ne 0) { Falhar $n "o comando '$cmd' terminou com codigo $LASTEXITCODE." }
 }
 
-function AtualizarPath {
-    $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
-                [Environment]::GetEnvironmentVariable("Path", "User")
-}
-
 function Tem($nome) { [bool](Get-Command $nome -ErrorAction SilentlyContinue) }
 
 function PythonOk {
@@ -172,7 +167,6 @@ if ($Etapa -le 2) {
         [Environment]::SetEnvironmentVariable("Path", "$userPath;$bin", "User")
         AtualizarPath
     }
-    Rodar 2 { & $Jarvis --version }
     Write-Host "OpenJarvis instalado em $Raiz" -ForegroundColor Green
 }
 
