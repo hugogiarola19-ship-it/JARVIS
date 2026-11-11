@@ -76,6 +76,25 @@ function LerModelo {
     Falhar $Etapa "nao sei qual modelo usar. Rode de novo com:  -Etapa $Etapa -Modelo gemma4:e4b  (ou gemma4:e2b)."
 }
 
+function AtualizarPath {
+    $extras = @((Join-Path $env:USERPROFILE ".local\bin"), (Join-Path $env:LOCALAPPDATA "Programs\Ollama"))
+    $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+                [Environment]::GetEnvironmentVariable("Path", "User") + ";" + ($extras -join ";")
+}
+
+# Garante que o servico do Ollama esta respondendo antes de usa-lo.
+function LigarOllama($n) {
+    for ($i = 0; $i -lt 30; $i++) {
+        try { Invoke-WebRequest "http://127.0.0.1:11434" -UseBasicParsing -TimeoutSec 2 | Out-Null; return } catch {}
+        if ($i -eq 0) {
+            Write-Host "Ligando o Ollama..."
+            Start-Process ollama -ArgumentList "serve" -WindowStyle Hidden
+        }
+        Start-Sleep -Seconds 2
+    }
+    Falhar $n "o Ollama nao respondeu em http://127.0.0.1:11434. Abra o aplicativo Ollama pelo menu Iniciar e tente de novo."
+}
+
 AtualizarPath
 
 # ---------------------------------------------------------------- 1. Diagnostico
@@ -125,18 +144,35 @@ if ($Etapa -le 2) {
         Rodar 2 { winget install --id Microsoft.VisualStudio.2022.BuildTools -e --accept-source-agreements --accept-package-agreements --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" }
     } else { Write-Host "MSVC Build Tools OK" }
 
-    Write-Host "Baixando e rodando o instalador oficial (install.ps1)..."
-    $tmp = Join-Path $env:TEMP "openjarvis-install.ps1"
-    Invoke-RestMethod "https://open-jarvis.github.io/OpenJarvis/install.ps1" -OutFile $tmp
-    Rodar 2 { powershell -NoProfile -ExecutionPolicy Bypass -File $tmp }
-    AtualizarPath
+    $jaInstalado = (Test-Path (Join-Path $Src ".venv\Scripts\python.exe")) -and (Tem "ollama")
+    if ($jaInstalado) {
+        Write-Host "O OpenJarvis e o Ollama ja estao instalados; nao vou rodar o instalador oficial de novo."
+    } else {
+        Write-Host "Baixando e rodando o instalador oficial (install.ps1)..."
+        $tmp = Join-Path $env:TEMP "openjarvis-install.ps1"
+        Invoke-RestMethod "https://open-jarvis.github.io/OpenJarvis/install.ps1" -OutFile $tmp
+        Rodar 2 { powershell -NoProfile -ExecutionPolicy Bypass -File $tmp }
+        AtualizarPath
+        if (-not (Tem "ollama")) {
+            Write-Host "O Ollama nao veio junto; instalando..."
+            Rodar 2 { winget install --id Ollama.Ollama -e --accept-source-agreements --accept-package-agreements }
+            AtualizarPath
+        }
+    }
 
-    if (-not (Test-Path $Jarvis)) { Falhar 2 "o instalador terminou, mas nao achei $Jarvis." }
-    if (-not (Tem "ollama")) {
-        Write-Host "O Ollama nao veio junto; instalando..."
-        Rodar 2 { winget install --id Ollama.Ollama -e --accept-source-agreements --accept-package-agreements }
+    # Se o instalador oficial foi interrompido antes do fim, cria o atalho 'jarvis' igual ao dele.
+    if (-not (Test-Path $Jarvis)) {
+        Write-Host "Criando o atalho $Jarvis ..."
+        New-Item -ItemType Directory -Force -Path (Split-Path $Jarvis) | Out-Null
+        Set-Content -Path $Jarvis -Encoding ASCII -Value "@echo off`r`nuv run --project `"%~dp0..\src`" jarvis %*"
+    }
+    $bin = Split-Path $Jarvis
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if ($userPath -notlike "*$bin*") {
+        [Environment]::SetEnvironmentVariable("Path", "$userPath;$bin", "User")
         AtualizarPath
     }
+    Rodar 2 { & $Jarvis --version }
     Write-Host "OpenJarvis instalado em $Raiz" -ForegroundColor Green
 }
 
@@ -144,6 +180,7 @@ if ($Etapa -le 2) {
 if ($Etapa -le 3) {
     $m = LerModelo
     Passo 3 "Vou baixar o cerebro '$m' no Ollama (download de varios GB) e deixar ele como modelo padrao do Jarvis."
+    LigarOllama 3
     Rodar 3 { ollama pull $m }
     Rodar 3 { & $Jarvis config set intelligence.default_model $m }
 }
