@@ -189,6 +189,10 @@ if ($Etapa -le 4) {
     } finally { Pop-Location }
     Rodar 4 { & $Jarvis config set speech.language pt }
     Rodar 4 { & $Jarvis config set speech.model small }
+    # Reconhecimento de voz no processador: na placa NVIDIA ele exige bibliotecas CUDA
+    # (cublas64_12.dll) que nao vem instaladas, e assim a placa fica livre para o cerebro.
+    Rodar 4 { & $Jarvis config set speech.device cpu }
+    Rodar 4 { & $Jarvis config set speech.compute_type int8 }
 }
 
 # ---------------------------------------------------------------- 5. Voz

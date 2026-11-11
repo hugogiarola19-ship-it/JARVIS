@@ -24,7 +24,7 @@ apertar Enter. Se algo der errado ele **para**, mostra o erro e diz como retomar
 | 1 | Mostra sistema, RAM e placa de vídeo e sugere o cérebro: `gemma4:e4b` (16 GB de RAM ou mais) ou `gemma4:e2b` |
 | 2 | Confere Python 3.10–3.13, git e MSVC Build Tools; roda o instalador oficial `install.ps1` (traz uv e Ollama) |
 | 3 | `ollama pull <modelo>` e `jarvis config set intelligence.default_model <modelo>` |
-| 4 | Instala os extras `speech` e `voice`; `speech.language pt`, `speech.model small` |
+| 4 | Instala os extras `speech` e `voice`; `speech.language pt`, `speech.model small`, `speech.device cpu`, `speech.compute_type int8` |
 | 5 | Instala o espeak-ng; `speech.tts_backend kokoro`, `speech.voice_id pf_dora` |
 | 6 | `jarvis doctor` — repita até ficar limpo |
 | 7 | `jarvis ask "Responda em português: quem é você?"` |
