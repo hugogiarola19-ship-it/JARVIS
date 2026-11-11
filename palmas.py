@@ -19,8 +19,13 @@ import shlex
 import subprocess
 import sys
 import time
+import warnings
 
 import numpy as np
+
+# Menos avisos técnicos na tela (não mudam o funcionamento).
+warnings.filterwarnings('ignore')
+os.environ.setdefault('HF_HUB_DISABLE_SYMLINKS_WARNING', '1')
 
 SR = 16000            # amostras por segundo do microfone
 BLOCO = 512           # ~32 ms por leitura
@@ -75,7 +80,7 @@ def falar(texto):
     try:
         import sounddevice as sd
         from kokoro import KPipeline
-        pipe = falar.pipe = getattr(falar, 'pipe', None) or KPipeline(lang_code='p')
+        pipe = falar.pipe = getattr(falar, 'pipe', None) or KPipeline(lang_code='p', repo_id='hexgrad/Kokoro-82M')
         for _, _, audio in pipe(texto, voice=VOZ):
             audio = audio.numpy() if hasattr(audio, 'numpy') else np.asarray(audio)
             sd.play(audio, 24000)
@@ -88,7 +93,12 @@ def abrir_jarvis():
     cmd = shlex.split(JARVIS_CMD, posix=os.name != 'nt')
     pasta = JARVIS_DIR
     print('Abrindo:', ' '.join(cmd))
-    subprocess.run(cmd, cwd=pasta, shell=os.name == 'nt')
+    # Pula as duas perguntas de ajuste (num_ctx / num_gpu) que o chat faz ao abrir.
+    ambiente = dict(os.environ, JARVIS_SKIP_RUNTIME_PANEL='1')
+    # No Windows o chat abre numa janela própria, para aparecer mesmo quando este
+    # programa está minimizado esperando as palmas.
+    janela = subprocess.CREATE_NEW_CONSOLE if os.name == 'nt' else 0
+    subprocess.run(cmd, cwd=pasta, shell=os.name == 'nt', env=ambiente, creationflags=janela)
 
 
 def ouvir(calibrar=False):

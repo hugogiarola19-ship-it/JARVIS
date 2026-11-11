@@ -46,6 +46,18 @@ A calibração (`.\palmas.cmd --calibrar`) só mostra sons com pico acima de 0,0
 Dispara sozinho com barulho? Aumente. Não percebe as palmas? Diminua. Se as palmas dão pico
 abaixo de 0,2, aumente antes o volume do microfone no Windows.
 
+## Palmas direto da área de trabalho
+
+Para o Jarvis ficar esperando as palmas sempre que o Windows iniciar, rode uma vez:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\ativar-inicio.ps1
+```
+
+Ele fica minimizado na barra de tarefas ("Jarvis Palmas"). Duas palmas abrem o chat de voz numa
+janela nova; `/quit` fecha o chat e ele volta a esperar. Para desligar, rode o mesmo comando com
+`-Desativar` no final. O microfone fica em uso enquanto ele espera.
+
 ## Onde fica cada coisa
 
 - OpenJarvis: `%LOCALAPPDATA%\OpenJarvis` (código em `src`, comando em `bin\jarvis.cmd`)
