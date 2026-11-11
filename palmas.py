@@ -24,7 +24,7 @@ import numpy as np
 
 SR = 16000            # amostras por segundo do microfone
 BLOCO = 512           # ~32 ms por leitura
-LIMIAR = 0.30         # volume mínimo de uma palma (0 a 1). Ajuste com --calibrar
+LIMIAR = 0.45         # volume mínimo de uma palma (0 a 1). Ajuste com --calibrar
 CONTRASTE = 6.0       # a palma precisa ser X vezes mais alta que o ruído da sala
 JANELA = (0.12, 0.9)  # tempo entre a 1ª e a 2ª palma, em segundos
 SURDO = 0.10          # ignora o eco da mesma palma por esse tempo
